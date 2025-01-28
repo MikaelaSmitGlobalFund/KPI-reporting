@@ -18,6 +18,7 @@ computer   = 1                            # 1 = Mikaela # Add additional compute
 
 # Set Year reference
 start_year_min     = 2014                 # This cuts off the first year and removes years were HIVneg with the lag are wrong
+start_year_base    = 2021                 # This year is the base year of reporting, in this case 2021
 end_year_all       = 2023                 # This is the year of latest partner data
 end_year_sdg       = 2030                 # This is the final year of prediction
 start_year_hiv     = 2018
@@ -39,16 +40,20 @@ library(tidyr)
 
 # Set computer, wd and load data
 if (computer ==1){
-  setwd("/Users/mc1405/TGF_data/IC8/partner/")
+  setwd("/Users/mc1405/Dropbox/The Global Fund/KPI reporting 2021-2028/Data sources/")
   output_path = "/Users/mc1405/Dropbox/The Global Fund/Investment Case 8th/KPIs/RCode"
   
   # Load the pip data 
-  df_hiv2 = read.csv("hiv/2024_12_12/df_partner_hiv_12Dec.csv", stringsAsFactors = FALSE)
-  df_malaria2  = read.csv("malaria/2024_12_12/df_partner_malaria_6Jan.csv", stringsAsFactors = FALSE)
-  df_tb2      =  read.csv("tb/2024_12_12/df_partner_tb_12Dec.csv", stringsAsFactors = FALSE)
+  df_hiv2 = read.csv("df_partner_hiv_12Dec.csv", stringsAsFactors = FALSE)
+  df_malaria2  = read.csv("df_partner_malaria_6Jan.csv", stringsAsFactors = FALSE)
+  df_tb2      =  read.csv("df_partner_tb_12Dec.csv", stringsAsFactors = FALSE)
+  
+  # Load GP # TODO: needs to be updated
+  df_hiv_gp     = read.csv("hiv_gp_for_kpi.csv", stringsAsFactors = FALSE)
+  df_tb_gp      = read.csv("tb_gp_for_kpi.csv", stringsAsFactors = FALSE)
+  df_malaria_gp = read.csv("malaria_gp_for_kpi.csv", stringsAsFactors = FALSE)
   
   # Load list of countries
-  setwd("/Users/mc1405/Dropbox/The Global Fund/Investment Case 8th/KPIs/RCode")
   df_iso_hiv     = read.csv("List of countries/hiv_iso.csv", stringsAsFactors = FALSE)
   df_iso_tb      = read.csv("List of countries/tb_iso.csv", stringsAsFactors = FALSE)
   df_iso_malaria = read.csv("List of countries/malaria_iso.csv", stringsAsFactors = FALSE)
@@ -102,15 +107,24 @@ df_hiv      = df_hiv %>% filter(Year>=start_year_min)
 df_tb       = df_tb %>% filter(Year>=start_year_min)
 df_malaria  = df_malaria %>% filter(Year>=start_year_min)
 
-# Extract an incidence df
-df_hiv_inc      = subset(df_hiv, select = names(df_hiv) %in% c("ISO3", "Year", "incidence"))
-df_tb_inc       = subset(df_tb, select = names(df_tb) %in% c("ISO3", "Year", "incidence"))
-df_malaria_inc  = subset(df_malaria, select = names(df_malaria) %in% c("ISO3", "Year", "incidence"))
+# Rename variable names
+df_hiv = rename(df_hiv, cases = hiv_cases_n_pip)
+df_hiv = rename(df_hiv, deaths = hiv_deaths_n_pip)
+df_tb = rename(df_tb, cases = tb_cases_n_pip)
+df_tb = rename(df_tb, deaths = tb_deathsnohiv_n_pip)
+df_malaria = rename(df_malaria, cases = malaria_cases_n_pip)
+df_malaria = rename(df_malaria, deaths = malaria_deaths_n_pip)
 
-# Extract a mortality df
-df_hiv_mort     = subset(df_hiv, select = names(df_hiv) %in% c("ISO3", "Year", "mortality"))
-df_tb_mort      = subset(df_tb, select = names(df_tb) %in% c("ISO3", "Year", "mortality"))
-df_malaria_mort = subset(df_malaria, select = names(df_malaria) %in% c("ISO3", "Year", "mortality"))
+
+# Extract an cases df
+df_hiv_inc      = subset(df_hiv, select = names(df_hiv) %in% c("ISO3", "Year", "cases"))
+df_tb_inc       = subset(df_tb, select = names(df_tb) %in% c("ISO3", "Year", "cases"))
+df_malaria_inc  = subset(df_malaria, select = names(df_malaria) %in% c("ISO3", "Year", "cases"))
+
+# Extract a deaths df
+df_hiv_mort     = subset(df_hiv, select = names(df_hiv) %in% c("ISO3", "Year", "deaths"))
+df_tb_mort      = subset(df_tb, select = names(df_tb) %in% c("ISO3", "Year", "deaths"))
+df_malaria_mort = subset(df_malaria, select = names(df_malaria) %in% c("ISO3", "Year", "deaths"))
 
 # Filter to the necessary years, for each disease
 df_hiv_inc     = df_hiv_inc %>% filter(Year>=start_year_hiv & Year<=end_year_hiv)
@@ -125,12 +139,7 @@ df_malaria_mort = df_malaria_mort %>% filter(Year>=start_year_malaria & Year<=st
 df_hiv_inc = df_hiv_inc %>%
   group_by(ISO3) %>%
   mutate(
-    annual_change = incidence-lag(incidence),
-  )
-
-df_hiv_inc2 = df_hiv_inc %>%
-  group_by(ISO3) %>%
-  mutate(
+    annual_change = cases-lag(cases),
     AAC = mean(annual_change, na.rm = TRUE),
   )
 
@@ -144,69 +153,94 @@ df_tb_mort_intercept      = df_tb_mort %>% filter(Year==end_year_all)
 df_malaria_mort_intercept = df_malaria_mort %>% filter(Year==end_year_all)
 
 
-
-
-
-# Fit Linear models per disease and indicator, per country
-model_lm = df_hiv_inc %>% group_by(ISO3) %>% do(model = lm(incidence ~ Year, data = .))
+# Fit Linear and exponential models per disease and indicator, per country
+model_lm = df_hiv_inc %>% group_by(ISO3) %>% do(model = lm(cases ~ Year, data = .))
 coef_lm_hiv_inc <- model_lm %>%     # Get the key coefficients
   summarise(
-    intercept = coef(model)[1],
-    slope = coef(model)[2]
+    intercept_lm  = coef(model)[1],
+    slope_lm      = coef(model)[2]
   )
 
-# Bind 2023 information with model data
-coef_lm_hiv_inc <- cbind(df_hiv_inc_intercept, coef_lm_hiv_inc)
-
-# Update intercept
-coef_lm_hiv_inc = coef_lm_hiv_inc %>%
-  mutate(
-    intercept = incidence - (slope*Year)
-  )
-coef_lm_hiv_inc = subset(coef_lm_hiv_inc, select = -c(Year))
-  
-  
-
-# Fit exponential models per disease and indicator, per country
-model_exp = df_hiv_inc %>% group_by(ISO3) %>% do(model = lm(log(incidence) ~ Year, data = .))
+model_exp = df_hiv_inc %>% group_by(ISO3) %>% do(model = lm(log(cases) ~ Year, data = .))
 coef_exp_hiv_inc <- model_exp %>%     # Get the key coefficients
   summarise(
-    intercept = coef(model)[1],
-    slope = coef(model)[2]
+    intercept_exp = coef(model)[1],
+    slope_exp     = coef(model)[2]
   )
 
 # Bind 2023 information with model data
-coef_exp_hiv_inc <- cbind(df_hiv_inc_intercept, coef_exp_hiv_inc)
+coef_hiv_inc <- cbind(df_hiv_inc_intercept, coef_lm_hiv_inc, coef_exp_hiv_inc)
 
 # Update intercept
-coef_exp_hiv_inc = coef_exp_hiv_inc %>%
+coef_hiv_inc = coef_hiv_inc %>%
   mutate(
-    intercept = log(incidence) - (slope*Year)
+    intercept_lm  = cases - (slope_lm*Year),
+    intercept_exp = log(cases) - (slope_exp*Year)
   )
-coef_exp_hiv_inc = subset(coef_exp_hiv_inc, select = -c(Year))
+coef_hiv_inc = subset(coef_hiv_inc, select = -c(Year, annual_change))
 
 
 
 # Make a new empty dataframe for every country and prospective year
 # Then merge in slope and intercept and compute future incidence based on linear
 years = c(end_year_all:end_year_sdg)
-hiv_inc_lm = expand.grid(ISO3=df_iso_hiv$ISO3, Year=years)
-hiv_inc_lm = hiv_inc_lm[order(hiv_inc_lm$ISO3),]
-hiv_inc_lm = merge(coef_lm_hiv_inc, hiv_inc_lm, by = "ISO3", all.y=TRUE)
-hiv_inc_lm = hiv_inc_lm %>%
+hiv_inc_proj = expand.grid(ISO3=df_iso_hiv$ISO3, Year=years)
+hiv_inc_proj = hiv_inc_proj[order(hiv_inc_proj$ISO3),]
+hiv_inc_proj = merge(hiv_inc_proj, coef_hiv_inc, by = "ISO3", all.y=TRUE)
+hiv_inc_proj = hiv_inc_proj %>%
   mutate(
-    incidence = (slope*Year) + intercept
-  )
+    cases = 
+      ifelse(AAC<0, exp(slope_exp*Year + intercept_exp),
+      ifelse(AAC>0, (slope_lm*Year) + intercept_lm, NA)))
+hiv_inc_proj = subset(hiv_inc_proj, select = -c(intercept_lm, intercept_exp, slope_lm, slope_exp))
+hiv_inc_proj = hiv_inc_proj %>% filter(Year>end_year_all)
 
-# Now exponential projection
-years = c(end_year_all:end_year_sdg)
-hiv_inc_exp = expand.grid(ISO3=df_iso_hiv$ISO3, Year=years)
-hiv_inc_exp <- hiv_inc_exp[order(hiv_inc_exp$ISO3),]
-hiv_inc_exp <- merge(coef_exp_hiv_inc, hiv_inc_exp, by = "ISO3", all.y=TRUE)
-hiv_inc_exp = hiv_inc_exp %>%
+# Merge historic and projections
+df_hiv_inc = subset(df_hiv_inc, select = -c(annual_change))
+df_hiv_inc = rbind(df_hiv_inc, hiv_inc_proj)
+df_hiv_inc = df_hiv_inc[order(df_hiv_inc$ISO3),]
+
+
+# Now do 2021 to 2023 rate difference
+df_hiv_rate_red      = subset(df_hiv, select = names(df_hiv) %in% c("ISO3", "Year", "incidence", "mortality"))
+df_tb_rate_red       = subset(df_tb, select = names(df_tb) %in% c("ISO3", "Year", "incidence", "mortality"))
+df_malaria_rate_red  = subset(df_malaria, select = names(df_malaria) %in% c("ISO3", "Year", "incidence", "mortality"))
+
+# Filter for the years to be compared
+df_hiv_rate_red     = df_hiv_rate_red %>% filter(Year==end_year_all | Year==start_year_base)
+df_tb_rate_red      = df_tb_rate_red %>% filter(Year==end_year_all | Year==start_year_base)
+df_malaria_rate_red = df_malaria_rate_red %>% filter(Year==end_year_all | Year==start_year_base)
+
+# Compute reduction
+df_hiv_rate_red = df_hiv_rate_red %>%
+  pivot_wider(names_from = Year, values_from = c(incidence, mortality))
+
+df_hiv_rate_red = df_hiv_rate_red %>%
   mutate(
-    incidence = exp(slope*Year + intercept)
+    incidence_reduction = (incidence_2021 - incidence_2023) / incidence_2021,
+    mortality_reduction = (mortality_2021 - mortality_2023) / mortality_2021,
   )
+df_hiv_rate_red = subset(df_hiv_rate_red, select = -c(incidence_2021, incidence_2023, mortality_2021, mortality_2023))
+
+
+# Now get GP
+# Filter for the years to be compared
+df_hiv_gp     = df_hiv_gp %>% filter(year==end_year_sdg)
+df_tb_gp      = df_tb_gp %>% filter(year==end_year_sdg)
+df_malaria_gp = df_malaria_gp %>% filter(year==end_year_sdg)
+
+df_hiv_gp     = subset(df_hiv_gp, select = -c(X, scenario_descriptor, incidence, mortality))
+df_tb_gp      = subset(df_tb_gp, select = -c(X, scenario_descriptor, incidence, mortality))
+df_malaria_gp = subset(df_malaria_gp, select = -c(X, scenario_descriptor, incidence, mortality))
+
+df_hiv_gp = rename(df_hiv_gp, ISO3 = country)
+df_hiv_gp = rename(df_hiv_gp, Year = year)
+df_hiv_gp = rename(df_hiv_gp, cases_sdg = cases)
+df_hiv_gp = rename(df_hiv_gp, deaths_sdg = deaths)
+
+
+
+
 
 
 
