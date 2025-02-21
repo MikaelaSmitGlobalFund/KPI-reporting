@@ -517,39 +517,39 @@ df_malaria_mort = df_malaria_mort[order(df_malaria_mort$ISO3),]
 
 # Section 4. Clean up the cases and deaths CRT
 # Filter for the years to be compared
-df_hiv_inc_final   = df_hiv_inc %>% filter(Year==end_year_all | Year==end_year_gap | Year==end_year_sdg)
-df_hiv_mort_final  = df_hiv_mort %>% filter(Year==end_year_all | Year==end_year_gap | Year==end_year_sdg)
+df_hiv_inc_final   = df_hiv_inc %>% filter(Year==end_year_all | Year==end_year_gap)
+df_hiv_mort_final  = df_hiv_mort %>% filter(Year==end_year_all | Year==end_year_gap)
 
-df_tb_inc_final   = df_tb_inc %>% filter(Year==end_year_all | Year==end_year_gap | Year==end_year_sdg)
-df_tb_mort_final  = df_tb_mort %>% filter(Year==end_year_all | Year==end_year_gap | Year==end_year_sdg)
+df_tb_inc_final   = df_tb_inc %>% filter(Year==end_year_all | Year==end_year_gap)
+df_tb_mort_final  = df_tb_mort %>% filter(Year==end_year_all | Year==end_year_gap)
 
-df_malaria_inc_final   = df_malaria_inc %>% filter(Year==end_year_all | Year==end_year_gap | Year==end_year_sdg)
-df_malaria_mort_final  = df_malaria_mort %>% filter(Year==end_year_all | Year==end_year_gap | Year==end_year_sdg)
+df_malaria_inc_final   = df_malaria_inc %>% filter(Year==end_year_all | Year==end_year_gap)
+df_malaria_mort_final  = df_malaria_mort %>% filter(Year==end_year_all | Year==end_year_gap)
 
 # Pivot to get into format
 df_hiv_inc_final = df_hiv_inc_final %>%
   pivot_wider(names_from = Year, values_from = c(cases))
-colnames(df_hiv_inc_final) <- c('ISO3','Number_of_cases_new_infections_latest','Number_of_cases_new_infections_2028', 'Number_of_cases_new_infections_2030')
+colnames(df_hiv_inc_final) <- c('ISO3','Number_of_cases_new_infections_latest','Number_of_cases_new_infections_gap_year')
 
 df_hiv_mort_final = df_hiv_mort_final %>%
   pivot_wider(names_from = Year, values_from = c(deaths))
-colnames(df_hiv_mort_final) <- c('ISO3','Number_of_deaths_latest','Number_of_deaths_2028', 'Number_of_deaths_2030')
+colnames(df_hiv_mort_final) <- c('ISO3','Number_of_deaths_latest','Number_of_deaths_gap_year')
 
 df_tb_inc_final = df_tb_inc_final %>%
   pivot_wider(names_from = Year, values_from = c(cases))
-colnames(df_tb_inc_final) <- c('ISO3','Number_of_cases_new_infections_latest','Number_of_cases_new_infections_2028', 'Number_of_cases_new_infections_2030')
+colnames(df_tb_inc_final) <- c('ISO3','Number_of_cases_new_infections_latest','Number_of_cases_new_infections_gap_year')
 
 df_tb_mort_final = df_tb_mort_final %>%
   pivot_wider(names_from = Year, values_from = c(deaths))
-colnames(df_tb_mort_final) <- c('ISO3','Number_of_deaths_latest','Number_of_deaths_2028', 'Number_of_deaths_2030')
+colnames(df_tb_mort_final) <- c('ISO3','Number_of_deaths_latest','Number_of_deaths_gap_year')
 
 df_malaria_inc_final = df_malaria_inc_final %>%
   pivot_wider(names_from = Year, values_from = c(cases))
-colnames(df_malaria_inc_final) <- c('ISO3','Number_of_cases_new_infections_latest','Number_of_cases_new_infections_2028', 'Number_of_cases_new_infections_2030')
+colnames(df_malaria_inc_final) <- c('ISO3','Number_of_cases_new_infections_latest','Number_of_cases_new_infections_gap_year')
 
 df_malaria_mort_final = df_malaria_mort_final %>%
   pivot_wider(names_from = Year, values_from = c(deaths))
-colnames(df_malaria_mort_final) <- c('ISO3','Number_of_deaths_latest','Number_of_deaths_2028', 'Number_of_deaths_2030')
+colnames(df_malaria_mort_final) <- c('ISO3','Number_of_deaths_latest','Number_of_deaths_gap_year')
 
 
 
@@ -569,30 +569,30 @@ df_hiv_rate_red = df_hiv_rate_red %>%
 
 df_hiv_rate_red = df_hiv_rate_red %>%
   mutate(
-    Change_in_incidence_rate_2021_to_2023 = (incidence_2021 - incidence_2023) / incidence_2021,
-    Change_in_mortality_rate_2021_to_2023 = (mortality_2021 - mortality_2023) / mortality_2021,
+    Change_in_incidence_rate = (incidence_2021 - incidence_2023) / incidence_2021,
+    Change_in_mortality_rate = (mortality_2021 - mortality_2023) / mortality_2021,
   )
-df_hiv_rate_red = subset(df_hiv_rate_red, select = -c(incidence_2021, incidence_2023, mortality_2021, mortality_2023))
+df_hiv_rate_red = subset(df_hiv_rate_red, select = -c(incidence_2021, mortality_2021))
 
 df_tb_rate_red = df_tb_rate_red %>%
   pivot_wider(names_from = Year, values_from = c(incidence, mortality))
 
 df_tb_rate_red = df_tb_rate_red %>%
   mutate(
-    Change_in_incidence_rate_2021_to_2023 = (incidence_2021 - incidence_2023) / incidence_2021,
-    Change_in_mortality_rate_2021_to_2023 = (mortality_2021 - mortality_2023) / mortality_2021,
+    Change_in_incidence_rate = (incidence_2021 - incidence_2023) / incidence_2021,
+    Change_in_mortality_rate = (mortality_2021 - mortality_2023) / mortality_2021,
   )
-df_tb_rate_red = subset(df_tb_rate_red, select = -c(incidence_2021, incidence_2023, mortality_2021, mortality_2023))
+df_tb_rate_red = subset(df_tb_rate_red, select = -c(incidence_2021, mortality_2021))
 
 df_malaria_rate_red = df_malaria_rate_red %>%
   pivot_wider(names_from = Year, values_from = c(incidence, mortality))
 
 df_malaria_rate_red = df_malaria_rate_red %>%
   mutate(
-    Change_in_incidence_rate_2021_to_2023 = (incidence_2021 - incidence_2023) / incidence_2021,
-    Change_in_mortality_rate_2021_to_2023 = (mortality_2021 - mortality_2023) / mortality_2021,
+    Change_in_incidence_rate = (incidence_2021 - incidence_2023) / incidence_2021,
+    Change_in_mortality_rate = (mortality_2021 - mortality_2023) / mortality_2021,
   )
-df_malaria_rate_red = subset(df_malaria_rate_red, select = -c(incidence_2021, incidence_2023, mortality_2021, mortality_2023))
+df_malaria_rate_red = subset(df_malaria_rate_red, select = -c(incidence_2021, mortality_2021))
 
 
 # Section 6. Now get GP
@@ -612,7 +612,6 @@ df_tb_gp = rename(df_tb_gp, deaths_sdg = Deaths)
 df_malaria_gp = rename(df_malaria_gp, Year = year)
 df_malaria_gp = rename(df_malaria_gp, cases_sdg = cases)
 df_malaria_gp = rename(df_malaria_gp, deaths_sdg = deaths)
-
 
 # Make clean subset of pip data
 df_hiv_baseline      = df_hiv%>% filter(Year==start_year_gp_hiv)
@@ -652,8 +651,6 @@ df_malaria_gp_baseline = df_malaria_gp_baseline %>%
   )
 df_malaria_gp_baseline = subset(df_malaria_gp_baseline, select = c(ISO3, ratio_cases, ratio_deaths))
 
-
-
 # Merge pip and gp data
 df_hiv_gp = df_hiv_gp %>% left_join(df_hiv_gp_baseline, by='ISO3')
 df_hiv_gp = df_hiv_gp %>%
@@ -681,6 +678,11 @@ df_hiv_gp     = df_hiv_gp %>% filter(Year==end_year_gap)
 df_tb_gp      = df_tb_gp %>% filter(Year==end_year_gap)
 df_malaria_gp = df_malaria_gp %>% filter(Year==end_year_gap)
 
+#Keep only data we need
+df_hiv_gp     = subset(df_hiv_gp, select = -c(Year, ratio_cases, ratio_deaths))
+df_tb_gp      = subset(df_tb_gp, select = -c(Year, ratio_cases, ratio_deaths))
+df_malaria_gp = subset(df_malaria_gp, select = -c(Year, ratio_cases, ratio_deaths))
+
 
 
 
@@ -700,24 +702,94 @@ df_malaria_final = df_malaria_inc_final %>% left_join(df_malaria_mort_final, by=
 # Make the gap
 df_hiv_final = df_hiv_final %>%
   mutate(
-    Gap_in_nr_cases_to_SDG = (Number_of_cases_new_infections_2030 - cases_sdg),
-    Gap_in_nr_deaths_to_SDG = (Number_of_deaths_2030 - deaths_sdg),
+    Gap_in_nr_cases = (Number_of_cases_new_infections_gap_year - cases_sdg),
+    Gap_in_nr_deaths = (Number_of_deaths_gap_year - deaths_sdg),
   )
 
 df_tb_final = df_tb_final %>%
   mutate(
-    Gap_in_nr_cases_to_SDG = (Number_of_cases_new_infections_2030 - cases_sdg),
-    Gap_in_nr_deaths_to_SDG = (Number_of_deaths_2030 - deaths_sdg),
+    Gap_in_nr_cases = (Number_of_cases_new_infections_gap_year - cases_sdg),
+    Gap_in_nr_deaths = (Number_of_deaths_gap_year - deaths_sdg),
   )
 
 df_malaria_final = df_malaria_final %>%
   mutate(
-    Gap_in_nr_cases_to_SDG = (Number_of_cases_new_infections_2030 - cases_sdg),
-    Gap_in_nr_deaths_to_SDG = (Number_of_deaths_2030 - deaths_sdg),
+    Gap_in_nr_cases = (Number_of_cases_new_infections_gap_year - cases_sdg),
+    Gap_in_nr_deaths = (Number_of_deaths_gap_year - deaths_sdg),
   )
 
-# Gap
-# 2030 SDG and CRT point GAP = SDG-CRT. If positive then rank 
+# Compute % share of the gap
+df_hiv_final = df_hiv_final %>%
+  mutate(
+    cases_share = ifelse(Gap_in_nr_cases > 0, Gap_in_nr_cases / sum(Gap_in_nr_cases[Gap_in_nr_cases > 0], na.rm = TRUE)*100, 0),
+    deaths_share = ifelse(Gap_in_nr_deaths > 0, Gap_in_nr_deaths / sum(Gap_in_nr_deaths[Gap_in_nr_deaths > 0], na.rm = TRUE)*100, 0)
+  )
+
+df_tb_final = df_tb_final %>%
+  mutate(
+    cases_share = ifelse(Gap_in_nr_cases > 0, Gap_in_nr_cases / sum(Gap_in_nr_cases[Gap_in_nr_cases > 0], na.rm = TRUE)*100, 0),
+    deaths_share = ifelse(Gap_in_nr_deaths > 0, Gap_in_nr_deaths / sum(Gap_in_nr_deaths[Gap_in_nr_deaths > 0], na.rm = TRUE)*100, 0)
+  )
+
+df_malaria_final = df_malaria_final %>%
+  mutate(
+    cases_share = ifelse(Gap_in_nr_cases > 0, Gap_in_nr_cases / sum(Gap_in_nr_cases[Gap_in_nr_cases > 0], na.rm = TRUE)*100, 0),
+    deaths_share = ifelse(Gap_in_nr_deaths > 0, Gap_in_nr_deaths / sum(Gap_in_nr_deaths[Gap_in_nr_deaths > 0], na.rm = TRUE)*100, 0)
+  )
+
+# Make a clean df for each indicator
+df_kpi_I2_hiv     = subset(df_hiv_final, select = names(df_hiv_final) %in% c("ISO3", "Number_of_cases_new_infections_latest", "incidence_2023", "cases_share", "Change_in_incidence_rate"))
+df_kpi_I2_tb      = subset(df_tb_final, select = names(df_tb_final) %in% c("ISO3", "Number_of_cases_new_infections_latest", "incidence_2023", "cases_share", "Change_in_incidence_rate"))
+df_kpi_I2_malaria = subset(df_malaria_final, select = names(df_malaria_final) %in% c("ISO3", "Number_of_cases_new_infections_latest", "incidence_2023", "cases_share", "Change_in_incidence_rate"))
+df_kpi_I2 = rbind(df_kpi_I2_hiv, df_kpi_I2_tb, df_kpi_I2_malaria)
+
+
+df_kpi_I2 <- df_kpi_I2 %>%
+  mutate(
+    'KPI code'       = "KPI I2",
+    'Reporting year' = 2025,
+    "Reporting half" = "H1",
+    "Data period"    = 2023,
+    'Component'      = "HIV/AIDS",
+    ) %>%
+  select("KPI code", "Reporting year", "Reporting half", "Data period", 
+         "ISO3", "Component", "Number_of_cases_new_infections_latest", "incidence_2023", "cases_share", "Change_in_incidence_rate")
+
+df_kpi_I2 <- df_kpi_I2 %>%
+  rename(
+    "ISO" = "ISO3",
+    "Number of cases/infections, latest" = "Number_of_cases_new_infections_latest",
+    "Incidence rate" = 'incidence_2023',
+    "share of gap to SDG" = "cases_share",
+    "variation in incidence rate" = "Change_in_incidence_rate"
+  )
+
+df_kpi_I1_hiv     = subset(df_hiv_final, select = names(df_hiv_final) %in% c("ISO3", "Number_of_deaths_latest", "mortality_2023", "deaths_share", "Change_in_mortality_rate"))
+df_kpi_I1_tb      = subset(df_tb_final, select = names(df_tb_final) %in% c("ISO3", "Number_of_deaths_latest", "mortality_2023", "deaths_share", "Change_in_mortality_rate"))
+df_kpi_I1_malaria = subset(df_malaria_final, select = names(df_malaria_final) %in% c("ISO3", "Number_of_deaths_latest", "mortality_2023", "deaths_share", "Change_in_mortality_rate"))
+df_kpi_I1 = rbind(df_kpi_I1_hiv, df_kpi_I1_tb, df_kpi_I1_malaria)
+
+
+df_kpi_I1 <- df_kpi_I1 %>%
+  mutate(
+    'KPI code'       = "KPI I1",
+    'Reporting year' = 2025,
+    "Reporting half" = "H1",
+    "Data period"    = 2023,
+    'Component'      = "HIV/AIDS",
+  ) %>%
+  select("KPI code", "Reporting year", "Reporting half", "Data period", 
+         "ISO3", "Component", "Number_of_deaths_latest", "mortality_2023", "deaths_share", "Change_in_mortality_rate")
+
+df_kpi_I1 <- df_kpi_I1 %>%
+  rename(
+    "ISO" = "ISO3",
+    "Number of deaths, latest" = "Number_of_deaths_latest",
+    "Mortality rate" = 'mortality_2023',
+    "share of gap to SDG" = "deaths_share",
+    "variation in mortality rate" = "Change_in_mortality_rate"
+  )
+
 
 # Save the information relating to continuation of recent trends
 write.csv(coef_hiv_inc,file="/Users/mc1405/Dropbox/The Global Fund/KPI reporting 2021-2028/ROutput/coef_hiv_inc.csv", row.names=FALSE)
@@ -734,5 +806,8 @@ write.csv(df_hiv_final,file="/Users/mc1405/Dropbox/The Global Fund/KPI reporting
 write.csv(df_tb_final,file="/Users/mc1405/Dropbox/The Global Fund/KPI reporting 2021-2028/ROutput/TB_final_data.csv", row.names=FALSE)
 write.csv(df_malaria_final,file="/Users/mc1405/Dropbox/The Global Fund/KPI reporting 2021-2028/ROutput/Malaria_final_data.csv", row.names=FALSE)
 
+# Save the final output
+write.csv(df_kpi_I1,file="/Users/mc1405/Dropbox/The Global Fund/KPI reporting 2021-2028/ROutput/df_kpi_I1.csv", row.names=FALSE)
+write.csv(df_kpi_I2,file="/Users/mc1405/Dropbox/The Global Fund/KPI reporting 2021-2028/ROutput/df_kpi_I2.csv", row.names=FALSE)
 
 
