@@ -574,8 +574,8 @@ df_hiv_rate_red = df_hiv_rate_red %>%
 
 df_hiv_rate_red = df_hiv_rate_red %>%
   mutate(
-    Change_in_incidence_rate = (incidence_2021 - incidence_2023) / incidence_2021,
-    Change_in_mortality_rate = (mortality_2021 - mortality_2023) / mortality_2021,
+    Change_in_incidence_rate = (incidence_2023 - incidence_2021) / incidence_2023,
+    Change_in_mortality_rate = (mortality_2023 - mortality_2021) / mortality_2023,
   )
 df_hiv_rate_red = subset(df_hiv_rate_red, select = -c(incidence_2021, mortality_2021))
 
@@ -584,8 +584,8 @@ df_tb_rate_red = df_tb_rate_red %>%
 
 df_tb_rate_red = df_tb_rate_red %>%
   mutate(
-    Change_in_incidence_rate = (incidence_2021 - incidence_2023) / incidence_2021,
-    Change_in_mortality_rate = (mortality_2021 - mortality_2023) / mortality_2021,
+    Change_in_incidence_rate = (incidence_2023 - incidence_2021) / incidence_2023,
+    Change_in_mortality_rate = (mortality_2023 - mortality_2021) / mortality_2023,
   )
 df_tb_rate_red = subset(df_tb_rate_red, select = -c(incidence_2021, mortality_2021))
 
@@ -594,8 +594,8 @@ df_malaria_rate_red = df_malaria_rate_red %>%
 
 df_malaria_rate_red = df_malaria_rate_red %>%
   mutate(
-    Change_in_incidence_rate = (incidence_2021 - incidence_2023) / incidence_2021,
-    Change_in_mortality_rate = (mortality_2021 - mortality_2023) / mortality_2021,
+    Change_in_incidence_rate = (incidence_2023 - incidence_2021) / incidence_2023,
+    Change_in_mortality_rate = (mortality_2023 - mortality_2021) / mortality_2023,
   )
 df_malaria_rate_red = subset(df_malaria_rate_red, select = -c(incidence_2021, mortality_2021))
 
@@ -828,9 +828,6 @@ df_kpi_I1 <- df_kpi_I1 %>%
     "share of gap to SDG" = "deaths_share",
     "variation mortality rate" = "Change_in_mortality_rate"
   )
-
-
-
 
 
 
